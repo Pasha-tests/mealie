@@ -1,8 +1,9 @@
 from collections.abc import Callable
 from functools import cached_property
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import UUID4
+from slugify import slugify
 
 from mealie.routes._base.base_controllers import BaseCrudController
 from mealie.routes._base.controller import controller
@@ -33,6 +34,7 @@ from mealie.services.event_bus_service.event_types import (
     EventShoppingListItemBulkData,
     EventTypes,
 )
+from mealie.services.household_services.shopping_list_csv import shopping_list_items_to_csv
 from mealie.services.household_services.shopping_lists import ShoppingListService
 
 item_router = APIRouter(prefix="/households/shopping/items", tags=["Households: Shopping List Items"])
@@ -252,6 +254,17 @@ class ShoppingListController(BaseCrudController):
         )
 
         return updated_list
+
+    @router.get("/{item_id}/csv", response_class=Response, responses={200: {"content": {"text/csv": {}}}})
+    def export_csv(self, item_id: UUID4):
+        shopping_list = self.mixins.get_one(item_id)
+        filename = f"{slugify(shopping_list.name) or 'shopping-list'}.csv"
+
+        return Response(
+            content=shopping_list_items_to_csv(shopping_list.list_items),
+            media_type="text/csv",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
 
     @router.post("/{item_id}/recipe", response_model=ShoppingListOut)
     def add_recipe_ingredients_to_list(self, item_id: UUID4, data: list[ShoppingListAddRecipeParamsBulk]):

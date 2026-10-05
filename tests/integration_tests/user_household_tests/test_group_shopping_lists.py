@@ -1,4 +1,7 @@
+import csv
+import io
 import random
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -1664,3 +1667,57 @@ def test_shopping_lists_add_recipe_on_hand_food(
     as_json = utils.assert_deserialize(response, 200)
     food_ids = {item["foodId"] for item in as_json["listItems"]}
     assert food_ids == {str(on_hand_food.id), str(other_food.id)}
+
+
+def test_shopping_lists_export_csv(api_client: TestClient, unique_user: TestUser, shopping_list: ShoppingListOut):
+    database = unique_user.repos
+    label = database.group_multi_purpose_labels.create({"name": random_string(10), "group_id": unique_user.group_id})
+    food = database.ingredient_foods.create(SaveIngredientFood(name=random_string(10), group_id=unique_user.group_id))
+    free_text = random_string(10)
+
+    items = [
+        {"shopping_list_id": str(shopping_list.id), "note": free_text, "checked": True, "position": 0},
+        {
+            "shopping_list_id": str(shopping_list.id),
+            "food_id": str(food.id),
+            "label_id": str(label.id),
+            "quantity": 3,
+            "note": "organic",
+            "position": 1,
+        },
+    ]
+    response = api_client.post(api_routes.households_shopping_items_create_bulk, json=items, headers=unique_user.token)
+    utils.assert_deserialize(response, 201)
+
+    response = api_client.get(
+        api_routes.households_shopping_lists_item_id_csv(shopping_list.id), headers=unique_user.token
+    )
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/csv")
+    assert "attachment" in response.headers["content-disposition"]
+    assert ".csv" in response.headers["content-disposition"]
+
+    rows = list(csv.DictReader(io.StringIO(response.text)))
+    assert len(rows) == 2
+
+    assert rows[0]["note"] == free_text
+    assert rows[0]["checked"] == "true"
+    assert rows[0]["food"] == ""
+
+    assert rows[1]["food"] == food.name
+    assert rows[1]["quantity"] == "3"
+    assert rows[1]["label"] == label.name
+    assert rows[1]["note"] == "organic"
+    assert rows[1]["checked"] == "false"
+
+
+def test_shopping_lists_export_csv_not_found(api_client: TestClient, unique_user: TestUser):
+    response = api_client.get(api_routes.households_shopping_lists_item_id_csv(uuid4()), headers=unique_user.token)
+    assert response.status_code == 404
+
+
+def test_shopping_lists_export_csv_other_household(
+    api_client: TestClient, unique_user: TestUser, h2_user: TestUser, shopping_list: ShoppingListOut
+):
+    response = api_client.get(api_routes.households_shopping_lists_item_id_csv(shopping_list.id), headers=h2_user.token)
+    assert response.status_code == 404
