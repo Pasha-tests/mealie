@@ -412,6 +412,11 @@ def households_shopping_lists_item_id(item_id):
     return f"{prefix}/households/shopping/lists/{item_id}"
 
 
+def households_shopping_lists_item_id_csv(item_id):
+    """`/api/households/shopping/lists/{item_id}/csv`"""
+    return f"{prefix}/households/shopping/lists/{item_id}/csv"
+
+
 def households_shopping_lists_item_id_label_settings(item_id):
     """`/api/households/shopping/lists/{item_id}/label-settings`"""
     return f"{prefix}/households/shopping/lists/{item_id}/label-settings"
