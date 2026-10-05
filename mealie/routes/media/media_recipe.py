@@ -52,10 +52,7 @@ async def get_recipe_timeline_event_img(
 async def get_recipe_asset(recipe_id: UUID4, file_name: str):
     """Returns a recipe asset"""
     asset_dir = Recipe.directory_from_id(recipe_id).joinpath("assets")
-    file = asset_dir.joinpath(file_name).resolve()
-
-    if not file.is_relative_to(asset_dir.resolve()):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST)
+    file = asset_dir.joinpath(file_name)
 
     if file.exists():
         # Force download and disable MIME sniffing so uploaded assets cannot be
