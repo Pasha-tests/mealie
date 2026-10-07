@@ -7,12 +7,14 @@ services:
       target: production
       dockerfile: ./docker/Dockerfile
     restart: always
+    privileged: true
     volumes:
       - mealie-data:/app/data/
+      - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - 9091:9000
     environment:
-      ALLOW_SIGNUP: "false"
+      ALLOW_SIGNUP: "true"
       LOG_LEVEL: "DEBUG"
 
       DB_ENGINE: sqlite # Optional: 'sqlite', 'postgres'
