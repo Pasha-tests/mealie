@@ -1,19 +1,12 @@
-from enum import StrEnum
-
 from fastapi import APIRouter, HTTPException, status
 from pydantic import UUID4
 from starlette.responses import FileResponse
 
+from mealie.routes.media._types import ImageType
 from mealie.schema.recipe import Recipe
 from mealie.schema.recipe.recipe_timeline_events import RecipeTimelineEventOut
 
 router = APIRouter(prefix="/recipes")
-
-
-class ImageType(StrEnum):
-    original = "original.webp"
-    small = "min-original.webp"
-    tiny = "tiny-original.webp"
 
 
 @router.get("/{recipe_id}/images/{file_name}")
