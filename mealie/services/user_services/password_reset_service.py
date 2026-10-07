@@ -66,5 +66,4 @@ class PasswordResetService(BaseService):
             self.logger.error("failed to reset password: invalid password")
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid password")
 
-        # Delete Token from DB
-        self.db.tokens_pw_reset.delete(token_entry.token)
+        # Token is kept in the DB so resets can be audited
