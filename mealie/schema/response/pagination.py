@@ -58,7 +58,7 @@ class PaginationBase[DataT: BaseModel](BaseModel):
     previous: str | None = None
 
     def _set_next(self, route: str, query_params: dict[str, Any]) -> None:
-        if self.page >= self.total_pages:
+        if self.page > self.total_pages:
             self.next = None
             return
 
