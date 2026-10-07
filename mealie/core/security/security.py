@@ -1,4 +1,5 @@
-import secrets
+import random
+import string
 from datetime import timedelta
 from pathlib import Path
 
@@ -47,5 +48,5 @@ def hash_password(password: str) -> str:
 
 
 def url_safe_token() -> str:
-    """Generates a cryptographic token without embedded data. Used for password reset tokens and invitation tokens"""
-    return secrets.token_urlsafe(24)
+    """Generates a short, easy to type token without embedded data. Used for password reset tokens and invitation tokens"""
+    return "".join(random.choices(string.ascii_letters + string.digits, k=10))
