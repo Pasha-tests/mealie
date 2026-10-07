@@ -8,7 +8,7 @@ from mealie.core.config import get_app_dirs
 from mealie.core.root_logger import get_logger
 from mealie.core.security import create_file_token
 from mealie.pkgs.stats.fs_stats import pretty_size
-from mealie.routes._base import BaseAdminController, controller
+from mealie.routes._base import BaseUserController, controller
 from mealie.schema.admin.backup import AllBackups, BackupFile
 from mealie.schema.response.responses import ErrorResponse, FileTokenResponse, SuccessResponse
 
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/backups")
 
 
 @controller(router)
-class AdminBackupController(BaseAdminController):
+class AdminBackupController(BaseUserController):
     def _backup_path(self, name: str) -> Path:
         backup_dir = get_app_dirs().BACKUP_DIR
         candidate = (backup_dir / name).resolve()
