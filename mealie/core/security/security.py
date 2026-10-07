@@ -37,7 +37,7 @@ def get_auth_provider(session: Session, data: CredentialsRequestForm) -> AuthPro
 
 
 def create_file_token(file_path: Path) -> str:
-    token, _ = create_access_token({"file": str(file_path)}, timedelta(minutes=30))
+    token, _ = create_access_token({"path": str(file_path)}, timedelta(minutes=30))
     return token
 
 
